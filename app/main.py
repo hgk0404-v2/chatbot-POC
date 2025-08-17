@@ -38,3 +38,25 @@ else:
 # app.include_router(chat.router)
 # app.include_router(ingest.router)
 # app.include_router(search.router)
+
+
+# app/main.py (상단 생략)
+from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+
+# 개발 편의: CORS(같은 도메인이면 크게 필요 없지만 켜둬도 무방)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], allow_credentials=True,
+    allow_methods=["*"], allow_headers=["*"],
+)
+
+class ChatReq(BaseModel):
+    message: str
+    session_id: str | None = None
+    top_k: int | None = 5
+
+@app.post("/chat")
+def chat(req: ChatReq):
+    # 일단 에코로 확인 (나중에 RAG 파이프라인 연결)
+    return {"answer": f"안녕하세요! 당신의 질문: {req.message}"}

@@ -1,5 +1,5 @@
 <!-- llm-services/static/web/index.html -->
-<!doctype html>
+<!-- <!doctype html>
 <html lang="ko">
     <body>
         <input id="q" placeholder="질문을 입력하세요"/><button id="send">질문</button>
@@ -21,4 +21,17 @@
             };
         </script>
     </body>
+</html> -->
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <title>RAG Chat</title>
+</head>
+<body>
+    <input id="userInput" placeholder="안녕, 너의 이름은 뭐니?" />
+    <button type="button" onclick="send()">질문</button>
+    <div id="chat"></div>
+    <script src="app.js"></script>
+</body>
 </html>
