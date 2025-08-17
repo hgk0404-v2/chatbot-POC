@@ -1,37 +1,20 @@
 <!-- llm-services/static/web/index.html -->
-<!-- <!doctype html>
-<html lang="ko">
-    <body>
-        <input id="q" placeholder="질문을 입력하세요"/><button id="send">질문</button>
-        <pre id="out"></pre><ul id="src"></ul>
-        <script>
-            const out = document.getElementById('out');
-            const src = document.getElementById('src');
-
-            document.getElementById('send').onclick = async () => {
-                const q = document.getElementById('q').value.trim();
-                src.innerHTML = "";
-                const es = new EventSource(`/chat/stream?message=${encodeURIComponent(q)}`);
-                es.addEventListener('citations', e => {
-                    const cites = JSON.parse(e.data);
-                    cites.forEach(c => { const li=document.createElement('li'); li.textContent=JSON.stringify(c); src.appendChild(li); });
-                });
-                es.addEventListener('token', e => { out.textContent += e.data; });
-                es.addEventListener('done', () => es.close());
-            };
-        </script>
-    </body>
-</html> -->
 <!doctype html>
 <html lang="ko">
-<head>
-    <meta charset="utf-8" />
-    <title>RAG Chat</title>
-</head>
-<body>
-    <input id="userInput" placeholder="안녕, 너의 이름은 뭐니?" />
-    <button type="button" onclick="send()">질문</button>
-    <div id="chat"></div>
-    <script src="app.js"></script>
-</body>
+    <head>
+        <meta charset="utf-8" />
+        <title>RAG Chat (Local)</title>
+        <link rel="stylesheet" href="styles.css" />
+    </head>
+    <body>
+        <div class="chat-wrap">
+            <div id="chat" class="chat"></div>
+            <div class="input-row">
+            <input id="prompt" placeholder="질문을 입력하세요…" />
+            <button id="sendBtn">보내기</button>
+            </div>
+        </div>
+        <script src="app.js"></script>
+    </body>
 </html>
+
