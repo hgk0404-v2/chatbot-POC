@@ -1,0 +1,46 @@
+llm-services
+├─ app/
+│   ├─ main.py
+│   │
+│   ├─ routers/
+│   │   ├─ chat.py          # /chat, /chat/stream
+│   │   ├─ ingest.py        # /ingest, /ingest/status
+│   │   └─ search.py        # /search
+│   │
+│   ├─ services/
+│   │   ├─ rag_pipeline.py  # LCEL 정의(재작성→검색→재랭크→프롬프트→LLM)
+│   │   ├─ embeddings.py    # Embedding 클라이언트
+│   │   ├─ vectorstore.py   # Milvus/FAISS 어댑터
+│   │   ├─ rerank.py        # Cohere/Jina/SBERT 래퍼
+│   │   ├─ loaders.py       # 문서 로더/클리닝/스플리터
+│   │   ├─ memory.py        # 대화기록 저장(SQL/Redis)
+│   │   └─ postprocess.py   # 마크다운→HTML, 인용주석
+│   │
+│   ├─ schemas/
+│   │   └─ DTO.py # (DTO 정의: Pydantic 모델)
+│   │
+│   ├─ core/
+│   │   ├─ config.py        # 환경변수/설정
+│   │   └─ logging.py
+│   │
+│   └─ tests/
+│       └─ (유닛 테스트 코드)
+│
+├─ static/
+│    └─ web/
+│       ├─ index.html
+│       ├─ app.js
+│       └─ styles.css
+│
+├─ data/
+│
+├─ index/
+│   └─ faiss/
+│
+├─ models/
+│   └─ qwen2.5-3b-instruct-q4_k_m.gguf
+│
+├─ .env
+├─ requirements.txt
+├─ Dockerfile        # FastAPI 앱 이미지 빌드
+├─ docker-compose.yaml

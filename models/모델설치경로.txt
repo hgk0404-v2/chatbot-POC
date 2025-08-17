@@ -1,0 +1,4 @@
+# 로컬에 다운받아서 사용해야 할 모델 정보.
+경로: https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF
+모델 크기: 2.1GB 
+모델 이름: qwen2.5-3b-instruct-q4_k_m.gguf

@@ -1,0 +1,24 @@
+<!-- llm-services/static/web/index.html -->
+<!doctype html>
+<html lang="ko">
+    <body>
+        <input id="q" placeholder="질문을 입력하세요"/><button id="send">질문</button>
+        <pre id="out"></pre><ul id="src"></ul>
+        <script>
+            const out = document.getElementById('out');
+            const src = document.getElementById('src');
+
+            document.getElementById('send').onclick = async () => {
+                const q = document.getElementById('q').value.trim();
+                src.innerHTML = "";
+                const es = new EventSource(`/chat/stream?message=${encodeURIComponent(q)}`);
+                es.addEventListener('citations', e => {
+                    const cites = JSON.parse(e.data);
+                    cites.forEach(c => { const li=document.createElement('li'); li.textContent=JSON.stringify(c); src.appendChild(li); });
+                });
+                es.addEventListener('token', e => { out.textContent += e.data; });
+                es.addEventListener('done', () => es.close());
+            };
+        </script>
+    </body>
+</html>
