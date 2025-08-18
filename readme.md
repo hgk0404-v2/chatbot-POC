@@ -1,5 +1,5 @@
 # branch: test-v1
 
-### 채팅 실현까지 구현
+### .txt 파일 /data에 넣고 인덱스 파싱 성공(하지만 답변이 불완전함)
 
-<img width="1908" height="1000" alt="Image" src="https://github.com/user-attachments/assets/09702056-dc81-42a4-8d4c-aaac99c250b7" />
+<img width="1852" height="997" alt="Image" src="https://github.com/user-attachments/assets/00ec0471-2c4d-4187-8f7f-0405c060650c" />
