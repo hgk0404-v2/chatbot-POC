@@ -13,8 +13,6 @@ SYSTEM_PROMPT = """아래 컨텍스트에서만 근거하여 답변합니다.
 각 단락 끝에 근거 출처 번호를 표기하십시오.
 """
 
-MODEL_PATH = os.path.join("models", "qwen2.5-3b-instruct-q4_k_m.gguf")  # GGUF 파일 위치
-
 def build_chain():
     # 1) 임베딩/벡터검색
     embeddings = get_embeddings()
@@ -30,16 +28,12 @@ def build_chain():
 
     # 3) LLM (llama.cpp, CUDA 빌드)
     llm = LlamaCpp(
-        model_path=MODEL_PATH,
-        # 성능/메모리 파라미터 (RTX 4060 8GB 기준 안전값)
+        model_path=settings.MODEL_PATH,   # ✅ .env에서 읽음
         n_ctx=4096,
-        n_gpu_layers=-1,   # 가능한 모든 레이어를 GPU에
-        n_batch=512,       # VRAM 여유에 따라 256~1024 사잇값 조정
+        n_gpu_layers=-1,
+        n_batch=512,
         temperature=0.2,
         streaming=True,
-        # 필요시 추가 옵션
-        # f16_kv=True,
-        # verbose=True,
     )
 
     def format_docs(docs):
@@ -56,7 +50,8 @@ def build_chain():
         docs = retriever.invoke(question)
         context, citations = format_docs(docs)
         chain = prompt | llm | StrOutputParser()
-        return chain.stream({"question": question, "context": context}), citations
+        # 항상 generator 반환
+        stream = chain.stream({"question": question, "context": context})
+        return stream, citations
 
     return run
-

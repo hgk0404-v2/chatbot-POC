@@ -1,0 +1,7 @@
+# requirements-heavy.txt
+numpy==1.26.4
+faiss-cpu==1.8.0.post1
+sentence-transformers==2.7.0
+llama-cpp-python==0.2.90
+
+

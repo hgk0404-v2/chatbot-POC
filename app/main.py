@@ -3,8 +3,11 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
+from app.routers import api_router
 
 app = FastAPI(title="RAG FastAPI")
+
+app.include_router(api_router, prefix="/api")
 
 # 실제 위치: /app/static/web
 ROOT = Path(__file__).resolve().parents[1]

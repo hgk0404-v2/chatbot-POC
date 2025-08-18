@@ -1,24 +1,30 @@
-FROM python:3.11-slim
+# syntax=docker/dockerfile:1.4
+FROM nvidia/cuda:12.2.1-runtime-ubuntu22.04
 
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
-# 시스템 패키지 설치
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    cmake \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    python3-dev python3-pip build-essential cmake git pkg-config libgomp1 libssl-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 # pip 업그레이드
-RUN pip install --upgrade pip
+RUN pip install --upgrade pip setuptools wheel
 
-# 미리 빌드된 CUDA wheel 설치 (torch 2.3 + CUDA 12.1 대응)
-RUN pip install llama-cpp-python==0.2.90 \
-    --extra-index-url https://jllllll.github.io/llama-cpp-python-cuBLAS-wheels/torch2.3/cu121
+# heavy deps (cuBLAS wheel을 내려받기 위해 extra-index-url 사용)
+COPY requirements-heavy.txt /app/requirements-heavy.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir --prefer-binary \
+        --extra-index-url https://jllllll.github.io/llama-cpp-python-cuBLAS-wheels/ \
+        -r requirements-heavy.txt
 
-# requirements.txt 설치
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
+# 나머지 deps
+COPY requirements.txt /app/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir -r requirements.txt
 
 COPY . /app
 
