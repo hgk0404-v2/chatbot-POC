@@ -32,6 +32,8 @@ function ensureSid() {
     return id;
 }
 
+let es = null;
+
 async function sendOnce() {
     const q = inputEl.value.trim();
     if (!q) return;
@@ -49,7 +51,8 @@ async function sendOnce() {
     }
 
     const url = `/api/chat/stream?session_id=${encodeURIComponent(sid)}&message=${encodeURIComponent(q)}`;
-    const es = new EventSource(url);
+    if (es) es.close();   // 혹시 이전 연결이 있으면 닫기
+    es = new EventSource(url);
 
     let endedNormally = false;
 
@@ -124,25 +127,3 @@ function sanitizeRagOutput(raw) {
 
     return s.trim();
 }
-
-// sendOnce() 내부에서 bubble 만들고 나서…
-let raw = '';
-
-// named event (백엔드: event: token)
-es.addEventListener('token', (e) => {
-    raw += e.data;
-    bubble.textContent = sanitizeRagOutput(raw);
-    chatEl.scrollTop = chatEl.scrollHeight;
-});
-
-// 호환: 기본 message 이벤트도 지원
-es.onmessage = (e) => {
-    if (e.data === '[DONE]') {
-        es.close();
-        btnEl.disabled = false;
-        return;
-    }
-    raw += e.data;
-    bubble.textContent = sanitizeRagOutput(raw);
-    chatEl.scrollTop = chatEl.scrollHeight;
-};
