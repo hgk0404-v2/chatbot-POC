@@ -17,7 +17,6 @@ try:
 except Exception:
     _HAS_LLAMA_CPP = False
 
-
 class LocalModel:
     def __init__(
         self,
@@ -36,11 +35,16 @@ class LocalModel:
         if backend == "hf":
             if not _HAS_HF:
                 raise RuntimeError("transformers/torch 미설치. requirements.txt 확인")
-            self.tokenizer = AutoTokenizer.from_pretrained(self.model_path, use_fast=True)
+            self.tokenizer = AutoTokenizer.from_pretrained(
+                self.model_path,
+                use_fast=True,
+                trust_remote_code=True,
+            )
             self.model = AutoModelForCausalLM.from_pretrained(
                 self.model_path,
                 torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
                 device_map="auto" if self.device == "cuda" else None,
+                trust_remote_code=True,
             ).to(self.device)
         elif backend == "llama_cpp":
             if not _HAS_LLAMA_CPP:
@@ -113,3 +117,47 @@ class LocalModel:
                 stop=["<|user|>", "<|system|>", "<|assistant|>"],
             ):
                 yield out["choices"][0]["text"]
+
+try:
+    from langchain_community.llms import LlamaCpp
+except Exception as _e:
+    LlamaCpp = None
+
+def load_llama(
+    model_path: str,
+    *,
+    n_ctx: int = 4096,
+    n_batch: int = 512,
+    n_threads: int | None = None,
+    n_gpu_layers: int = 0,          # GPU VRAM 허용 범위에서 크게(예: 999)
+    temperature: float = 0.1,
+    max_tokens: int = 256,
+    stop: list[str] | None = None,
+):
+    """
+    LangChain 호환 LlamaCpp LLM을 로드하여 반환.
+    main.py의 build_chain()에서 그대로 사용 가능합니다.
+    """
+    if LlamaCpp is None:
+        raise RuntimeError("langchain-community가 필요합니다. requirements.txt 확인")
+
+    import os
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(f"GGUF model not found: {model_path}")
+
+    # 대화 템플릿 맞춤형 stop 토큰
+    stop = stop or ["<|user|>", "<|system|>", "<|assistant|>", "</s>"]
+
+    llm = LlamaCpp(
+        model_path=model_path,
+        n_ctx=n_ctx,
+        n_batch=n_batch,
+        n_threads=n_threads or (os.cpu_count() or 4),
+        n_gpu_layers=n_gpu_layers,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        stop=stop,
+        streaming=True,   # LCEL과 함께 사용 시 astream 가능
+        verbose=False,
+    )
+    return llm

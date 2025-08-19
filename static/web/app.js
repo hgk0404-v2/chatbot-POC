@@ -44,17 +44,14 @@ async function sendOnce() {
     const bubble = appendMsg('assistant', '');
 
     // 세션 ID 확보
-    let sid = localStorage.getItem('sessionId');
-    if (!sid) {
-        sid = crypto?.randomUUID?.() || Math.random().toString(36).slice(2);
-        localStorage.setItem('sessionId', sid);
-    }
+    const sid = ensureSid();
 
     const url = `/api/chat/stream?session_id=${encodeURIComponent(sid)}&message=${encodeURIComponent(q)}`;
     if (es) es.close();   // 혹시 이전 연결이 있으면 닫기
     es = new EventSource(url);
 
     let endedNormally = false;
+    let acc = "";  // ← 누적 버퍼
 
     // 서버가 보내는 named event 처리
     es.addEventListener('citations', (e) => {
@@ -62,34 +59,19 @@ async function sendOnce() {
         // citations UI가 있으면 여기서 반영
     });
 
-    es.addEventListener('token', (e) => {
-        bubble.textContent += e.data;         // 한 토큰씩 붙임
-        chatEl.scrollTop = chatEl.scrollHeight;
-    });
-
     es.addEventListener('done', () => {
         endedNormally = true;
+        const cleaned = sanitizeRagOutput(acc);
+        bubble.textContent = cleaned || acc;
         es.close();
         btnEl.disabled = false;
     });
-
-    // 백엔드가 기본 message로 보내는 경우(호환)
-    es.onmessage = (e) => {
-        if (e.data === '[DONE]') {
-        endedNormally = true;
-        es.close();
-        btnEl.disabled = false;
-        return;
-        }
-        try {
-        const p = JSON.parse(e.data);
-        const chunk = p.delta ?? p.content ?? p.data ?? '';
-        bubble.textContent += chunk;
+    
+    es.addEventListener('token', (e) => {
+        acc += e.data;
+        bubble.textContent = acc;
         chatEl.scrollTop = chatEl.scrollHeight;
-        } catch {
-        bubble.textContent += e.data;
-        }
-    };
+    });
 
     es.onerror = () => {
         es.close();
