@@ -76,7 +76,7 @@ class FaissStore:
         return docs
 
     def load_or_create(self, docs: Optional[List[Document]] = None) -> None:
-        # 1) 존재하면 로드
+        # 1) 기존 인덱스(index.faiss + index.pkl) 존재하면 로드
         if self.faiss_file.exists() and self.pkl_file.exists():
             self.vs = FAISS.load_local(
                 str(self.index_dir),
@@ -85,13 +85,13 @@ class FaissStore:
             )
             return
 
-        # 2) 전달 문서로 생성
+        # 2) 없고 docs 인자를 받았다면 -> docs로 새 인덱스 생성
         if docs:
             self.vs = FAISS.from_documents(docs, self.embeddings)
             self.vs.save_local(str(self.index_dir))
             return
 
-        # 3) data 디렉터리 스캔해 생성
+        # 3) 없고 docs도 없지만 data 디렉터리에 파일이 있으면 -> 스캔해서 새 인덱스 생성
         scanned = self._load_docs_from_data_dir()
         if scanned:
             self.vs = FAISS.from_documents(scanned, self.embeddings)
@@ -130,10 +130,10 @@ def load_faiss(
     embeddings = HuggingFaceEmbeddings(
         model_name=model_name,
         model_kwargs={
-            "trust_remote_code": True,
-            # "device": "cuda"  # GPU가 있으면 활성화 가능
+            "trust_remote_code": True, # hugging face에서 모델이 custom python code를 포함할 수 있도록 허용.
+            "device": "cuda"  # GPU가 있으면 활성화 가능
         },
-        encode_kwargs={"normalize_embeddings": normalize_embeddings},
+        encode_kwargs={"normalize_embeddings": normalize_embeddings}, # 벡터를 정규화
     )
     index_dir = path or DEFAULT_INDEX_DIR
     store = FaissStore(embeddings, index_dir=index_dir)
