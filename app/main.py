@@ -7,6 +7,7 @@ from app.routers import api_router
 from app.services.vectorstore import load_faiss
 from app.services.local_model import load_llama
 from app.services.rag_pipeline import build_chain
+from app.core.config import settings
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -22,16 +23,16 @@ async def startup():
     retriever = vs.as_retriever(
         search_type="similarity_score_threshold",
         search_kwargs={
-            "score_threshold": 0.2,  # 0.2~0.4 사이에서 조정
-            "k": 5
+            "score_threshold": settings.SCORE_THRESHOLD,
+            "k": settings.TOP_K
         },
     )
     llm = load_llama(  # llama-cpp-python 예시
-        model_path="models/qwen2.5-3b-instruct-q4_k_m.gguf",
-        n_ctx=4096, 
-        n_batch=512, 
-        n_threads=8, 
-        n_gpu_layers=999,
+        model_path=settings.MODEL_PATH,
+        n_ctx=settings.N_CTX,
+        n_batch=settings.N_BATCH,
+        n_threads=settings.N_THREADS,
+        n_gpu_layers=settings.N_GPU_LAYERS,
     )
     chain = build_chain(retriever=retriever, llm=llm)  # ★ 여기서만 조립
 

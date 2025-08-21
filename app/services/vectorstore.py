@@ -10,10 +10,10 @@ from langchain_core.documents import Document
 try:
     from app.core.config import settings
     DEFAULT_INDEX_DIR = getattr(settings, "INDEX_DIR", "index/faiss")
-    DEFAULT_EMBED_MODEL = getattr(settings, "EMBEDDING_MODEL", "BAAI/bge-m3")
+    DEFAULT_EMBED_MODEL = getattr(settings, "EMBEDDING_MODEL", "Alibaba-NLP/gte-multilingual-base")
 except Exception:
     DEFAULT_INDEX_DIR = "index/faiss"
-    DEFAULT_EMBED_MODEL = "BAAI/bge-m3"
+    DEFAULT_EMBED_MODEL = "Alibaba-NLP/gte-multilingual-base"
 
 
 class FaissStore:
